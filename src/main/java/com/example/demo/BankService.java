@@ -18,16 +18,75 @@ public class BankService {
     @Autowired
     private BankTransactionRepository txRepository;
 
-    // Create account
-    public Account createAccount(String holderName, Double initialBalance) {
-        if (initialBalance == null) initialBalance = 0.0;
-        Account a = new Account(holderName, initialBalance);
-        Account saved = accountRepository.save(a);
-        // record initial deposit if > 0
-        if (initialBalance > 0) {
-            txRepository.save(new BankTransaction(saved.getId(), "DEPOSIT", initialBalance, "Initial deposit"));
+    public Account createAccount(Account acc) {
+
+        if (acc.getBalance() == null) {
+            acc.setBalance(0.0);
         }
+
+        // Always normal user
+        acc.setRole(Role.USER);
+
+        Account saved = accountRepository.save(acc);
+
+        // initial deposit
+        if (saved.getBalance() != null && saved.getBalance() > 0) {
+            txRepository.save(new BankTransaction(
+                    saved.getId(),
+                    "DEPOSIT",
+                    saved.getBalance(),
+                    "Initial deposit"
+            ));
+        }
+
         return saved;
+    }
+
+    
+    
+    
+ // BankService.java  (add this method)
+
+    public Account updateAccount(Long id, Account updated) {
+        Account existing = getAccount(id);  // your existing method to fetch or throw
+
+        // update only personal / info fields (not id, not balance)
+        existing.setHolderName(updated.getHolderName());
+        existing.setAccountType(updated.getAccountType());
+        existing.setMobileNumber(updated.getMobileNumber());
+        existing.setEmail(updated.getEmail());
+        existing.setCity(updated.getCity());
+        existing.setState(updated.getState());
+        existing.setPostalCode(updated.getPostalCode());
+        existing.setCountry(updated.getCountry());
+        existing.setGender(updated.getGender());
+        existing.setDateOfBirth(updated.getDateOfBirth());
+        existing.setAadhaarNumber(updated.getAadhaarNumber());
+        existing.setPanNumber(updated.getPanNumber());
+        existing.setAddressLine1(updated.getAddressLine1());
+        existing.setAddressLine2(updated.getAddressLine2());
+        existing.setNomineeName(updated.getNomineeName());
+        existing.setNomineeRelation(updated.getNomineeRelation());
+        existing.setEducation(updated.getEducation());
+        existing.setOccupation(updated.getOccupation());
+        // you can add/remove fields as per requirement
+
+        return accountRepository.save(existing);
+    }
+
+    
+    
+    
+    
+    
+    
+
+    // OPTIONAL: keep old signature for compatibility
+    public Account createAccount(String holderName, Double initialBalance) {
+        Account a = new Account();
+        a.setHolderName(holderName);
+        a.setBalance(initialBalance);
+        return createAccount(a);
     }
 
     public Account getAccount(Long id) {
